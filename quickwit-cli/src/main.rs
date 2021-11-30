@@ -338,6 +338,13 @@ fn event_format(
 }
 
 fn setup_logging_and_tracing(level: Level) -> anyhow::Result<()> {
+    #[cfg(feature = "tokio-console")]
+    {
+        if std::env::var_os(QUICKWIT_TOKIO_CONSOLE_ENABLED_ENV_KEY).is_some() {
+            console_subscriber::init();
+            return Ok(());
+        }
+    }
     let env_filter = env::var("RUST_LOG")
         .map(|_| EnvFilter::from_default_env())
         .or_else(|_| EnvFilter::try_new(format!("quickwit={}", level)))
