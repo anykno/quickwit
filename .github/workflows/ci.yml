@@ -10,7 +10,6 @@ on:
       - "Cargo.toml"
       - "quickwit-*/**"
 
-
 env:
   RUSTFLAGS: -Dwarnings
   RUST_BACKTRACE: 1
@@ -32,6 +31,9 @@ jobs:
     container: public.ecr.aws/l6o9a3f9/quickwit-builder:latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+        with:
+          repository: tokio-rs/console
       - uses: actions/cache@v2
         with:
           path: |

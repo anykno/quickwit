@@ -72,16 +72,35 @@ pub(crate) fn spawn_sync_actor<A: SyncActor>(
     ctx: ActorContext<A::Message>,
     inbox: Inbox<A::Message>,
 ) -> ActorHandle<A> {
+    let actor_instance_id = ctx.actor_instance_id().to_string();
     let (state_tx, state_rx) = watch::channel(actor.observable_state());
     let ctx_clone = ctx.clone();
     let (exit_status_tx, exit_status_rx) = watch::channel(None);
     let span_current = Span::current();
-    let join_handle: JoinHandle<()> = spawn_blocking(move || {
-        let _span_guard = span_current.enter();
-        let exit_status = sync_actor_loop(actor, inbox, ctx, state_tx);
-        let _ = exit_status_tx.send(Some(exit_status));
-    });
+    let join_handle: JoinHandle<()> = spawn_named_blocking(
+        move || {
+            let _span_guard = span_current.enter();
+            let exit_status = sync_actor_loop(actor, inbox, ctx, state_tx);
+            let _ = exit_status_tx.send(Some(exit_status));
+        },
+        &actor_instance_id,
+    );
     ActorHandle::new(state_rx, join_handle, ctx_clone, exit_status_rx)
+}
+
+#[track_caller]
+pub(crate) fn spawn_named_blocking<F, R>(f: F, _name: &str) -> tokio::task::JoinHandle<R>
+where
+    F: FnOnce() -> R + Send + 'static,
+    R: Send + 'static,
+{
+    #[cfg(tokio_unstable)]
+    {
+        use tokio::runtime::Builder;
+        return tokio::task::Builder::new().name(_name).spawn_blocking(f);
+    }
+    #[cfg(not(tokio_unstable))]
+    spawn_blocking(f)
 }
 
 /// Process a given message.
