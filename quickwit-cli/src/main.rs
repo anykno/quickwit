@@ -26,6 +26,7 @@ use opentelemetry::global;
 use opentelemetry::sdk::propagation::TraceContextPropagator;
 use quickwit_cli::index::IndexCliCommand;
 use quickwit_cli::service::ServiceCliCommand;
+use quickwit_cli::source::SourceCliCommand;
 use quickwit_cli::split::SplitCliCommand;
 use quickwit_cli::*;
 use quickwit_telemetry::payload::TelemetryEvent;
@@ -37,16 +38,18 @@ use tracing_subscriber::EnvFilter;
 #[derive(Debug, PartialEq)]
 enum CliCommand {
     Index(IndexCliCommand),
-    Split(SplitCliCommand),
     Service(ServiceCliCommand),
+    Source(SourceCliCommand),
+    Split(SplitCliCommand),
 }
 
 impl CliCommand {
     fn default_log_level(&self) -> Level {
         match self {
             CliCommand::Index(subcommand) => subcommand.default_log_level(),
-            CliCommand::Split(_) => Level::ERROR,
             CliCommand::Service(_) => Level::INFO,
+            CliCommand::Source(_) => Level::ERROR,
+            CliCommand::Split(_) => Level::ERROR,
         }
     }
 
@@ -56,8 +59,9 @@ impl CliCommand {
             subcommand_opt.ok_or_else(|| anyhow::anyhow!("Failed to parse sub-matches."))?;
         match subcommand {
             "index" => IndexCliCommand::parse_cli_args(submatches).map(CliCommand::Index),
-            "split" => SplitCliCommand::parse_cli_args(submatches).map(CliCommand::Split),
             "service" => ServiceCliCommand::parse_cli_args(submatches).map(CliCommand::Service),
+            "source" => SourceCliCommand::parse_cli_args(submatches).map(CliCommand::Source),
+            "split" => SplitCliCommand::parse_cli_args(submatches).map(CliCommand::Split),
             _ => bail!("Subcommand `{}` is not implemented.", subcommand),
         }
     }
@@ -65,8 +69,9 @@ impl CliCommand {
     pub async fn execute(self) -> anyhow::Result<()> {
         match self {
             CliCommand::Index(sub_command) => sub_command.execute().await,
-            CliCommand::Split(sub_command) => sub_command.execute().await,
             CliCommand::Service(sub_command) => sub_command.execute().await,
+            CliCommand::Source(sub_command) => sub_command.execute().await,
+            CliCommand::Split(sub_command) => sub_command.execute().await,
         }
     }
 }

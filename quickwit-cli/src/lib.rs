@@ -25,6 +25,7 @@ use regex::Regex;
 
 pub mod index;
 pub mod service;
+pub mod source;
 pub mod split;
 pub mod stats;
 
