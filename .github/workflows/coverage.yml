@@ -121,7 +121,7 @@ jobs:
           curl -LsSf https://github.com/taiki-e/cargo-llvm-cov/releases/latest/download/cargo-llvm-cov-x86_64-unknown-linux-gnu.tar.gz | \
           tar xzf - -C ~/.cargo/bin
 
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
 
       - name: Generate code coverage
         run: |
