@@ -28,7 +28,7 @@ tantivy = { git = "https://github.com/quickwit-oss/tantivy/", rev = "88054aa", d
 tantivy-query-grammar = { git = "https://github.com/quickwit-oss/tantivy/", rev = "88054aa" }
 thiserror = "1.0"
 tracing = "0.1.29"
-typetag = "0.1"
+typetag = "0.2"
 quickwit-proto = { version = "0.3", path = "../quickwit-proto" }
 mockall = { version = "0.11", optional = true }
 
